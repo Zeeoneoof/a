@@ -58,14 +58,15 @@ Drivetrain::Drivetrain () {
     m_BL_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
     m_BR_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
 }
-void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric) {
+Odometry m_odometry;
+void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric)  {
 
   straightP = frc::SmartDashboard::GetNumber("Straight P", 0.02);
   straightI = frc::SmartDashboard::GetNumber("Straight I", 0);
   straightD = frc::SmartDashboard::GetNumber("Not Straight D", 0);
 
-  ctre::phoenix6::StatusSignal<units::angle::turn_t> CANcoderFLAngle = CANcoderFL.GetPosition();
-  double CANcoderFLpos = double(CANcoderFLpos);
+  //ctre::phoenix6::StatusSignal<units::angle::turn_t> CANcoderFLAngle = CANcoderFL.GetPosition();
+  //double CANcoderFLpos = double(CANcoderFLpos);
 
   // Code executed periodically during robot operation
     // Retrieve voltage values from encoders

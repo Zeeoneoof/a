@@ -12,6 +12,8 @@
 #include <networktables/NetworkTableValue.h>
 #include <ctre/phoenix6/TalonFX.hpp>
 #include <ctre/phoenix6/CANcoder.hpp>
+#include <frc2/command/SubsystemBase.h>
+#include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/Compressor.h>
 #include "math.h"
 
@@ -19,7 +21,7 @@
 
 static const int numEncoders = 4;
 
-class Drivetrain {
+class Drivetrain : public frc2::SubsystemBase {
     public:
         Drivetrain();
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
@@ -34,10 +36,8 @@ class Drivetrain {
         float straightD = 0;
         
         //Talon FX
-        ctre::phoenix6::hardware::TalonFX m_FL_Drive2{11/*CAN ID*/};
-        ctre::phoenix6::hardware::CANcoder CANcoderFL{9/*CAN ID*/};
-
-        Odometry m_odometry;
+        //ctre::phoenix6::hardware::TalonFX m_FL_Drive2{11/*CAN ID*/};
+        //ctre::phoenix6::hardware::CANcoder CANcoderFL{9/*CAN ID*/};
 
         //Drive motors
         rev::spark::SparkMax m_FL_Drive{11, rev::spark::SparkLowLevel::MotorType::kBrushless};

@@ -9,15 +9,12 @@
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 #include <frc/geometry/Pose2d.h>
 
-#include <Drivetrain.h>
+#include "Drivetrain.h"
+class Drivetrain;
 
 class Odometry {
-    units::degree_t ROT = units::degree_t(0);
-
-    units::length::meter_t positionFWDField = units::length::meter_t(0);
-    units::length::meter_t positionSTRField = units::length::meter_t(0);
     public:
-        frc::Pose2d GetPose();
+        frc::Pose2d getPose();
         void ResetPose(const frc::Pose2d& pose);
         frc::ChassisSpeeds GetRobotRelativeSpeeds();
         void DriveRobotRelative(const frc::ChassisSpeeds& speeds);
@@ -31,10 +28,11 @@ class Odometry {
         double wheelSpeedFR,
         double wheelSpeedBL,
         double wheelSpeedBR,
-        double GyroValue);
+        double GyroValue); 
     private:
         const float L = 0.5461;
         const float W = 0.5461;
 
         units::time::second_t lastTime = units::time::second_t(0);
+        std::unique_ptr<Drivetrain> drivetrain;
 };
