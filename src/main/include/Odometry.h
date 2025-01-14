@@ -12,12 +12,11 @@
 #include <Drivetrain.h>
 
 class Odometry {
+    units::degree_t ROT = units::degree_t(0);
 
-    
+    units::length::meter_t positionFWDField = units::length::meter_t(0);
+    units::length::meter_t positionSTRField = units::length::meter_t(0);
     public:
-        units::meter_t positionFWDField{0};
-
-        units::meter_t positionSTRField{0};
         frc::Pose2d GetPose();
         void ResetPose(const frc::Pose2d& pose);
         frc::ChassisSpeeds GetRobotRelativeSpeeds();
@@ -38,5 +37,4 @@ class Odometry {
         const float W = 0.5461;
 
         units::time::second_t lastTime = units::time::second_t(0);
-        
 };

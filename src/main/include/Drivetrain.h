@@ -5,7 +5,6 @@
 #include <frc/AnalogInput.h>
 #include <frc/Timer.h>
 #include <frc2/command/PIDCommand.h>
-#include <frc2/command/SubsystemBase.h>
 #include <ctre/phoenix6/Pigeon2.hpp>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -18,21 +17,13 @@
 
 #include "Odometry.h"
 
-
 static const int numEncoders = 4;
-class Drivetrain : public frc2::SubsystemBase {
+
+class Drivetrain {
     public:
         Drivetrain();
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
-        void Drive(auto speeds);  // Simple placeholder method
-        frc::Translation2d m_frontLeftLocation{0.381_m, 0.381_m};
-        frc::Translation2d m_frontRightLocation{0.381_m, -0.381_m};
-        frc::Translation2d m_backLeftLocation{-0.381_m, 0.381_m};
-        frc::Translation2d m_backRightLocation{-0.381_m, -0.381_m};
-
-        frc::SwerveDriveKinematics<4> m_kinematics{
-            m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation,
-            m_backRightLocation};
+        void Drive(const frc::ChassisSpeeds& speeds);  // Simple placeholder method
     private:
 
         float ModuleP = 0.200000;

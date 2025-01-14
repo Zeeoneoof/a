@@ -18,15 +18,11 @@ double MaxFRV = 0;
 double MaxBLV = 0;
 double MaxBRV = 0;
 
-
-
 double calculateAngle(double currentVoltage,int i,double MaxV){
   if (i < numEncoders){
     return currentDegrees[i] = ((currentVoltage/MaxV)*(2*M_PI));
   }
 }
-
-
 
 Drivetrain::Drivetrain () {
     rev::spark::SparkBaseConfig config;
@@ -61,12 +57,6 @@ Drivetrain::Drivetrain () {
     m_FR_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
     m_BL_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
     m_BR_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-}
-void Drivetrain::Drive(auto speeds) {
-  // Placeholder method for driving the robot
-    Drivetrain::Update(speeds.vx, speeds.vy, speeds.omega, Robot::GyroValue, 0, 0, false);
-  
-
 }
 void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric) {
 
