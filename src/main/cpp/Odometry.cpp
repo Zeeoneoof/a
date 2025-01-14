@@ -1,25 +1,50 @@
 #include "Odometry.h"
 #include "Drivetrain.h"
+#include "pathplanner/lib/controllers/PPHolonomicDriveController.h"
+#include <frc/DriverStation.h>
+
+units::degree_t ROT = units::degree_t(0);
+units::length::meter_t positionFWDField = units::length::meter_t(0);
+units::length::meter_t positionSTRField = units::length::meter_t(0);
+frc::SwerveModuleState frontLeftState{0_mps, frc::Rotation2d(0_deg)};
+frc::SwerveModuleState frontRightState{0_mps, frc::Rotation2d(0_deg)};
+frc::SwerveModuleState backLeftState{0_mps, frc::Rotation2d(0_deg)};
+frc::SwerveModuleState backRightState{0_mps, frc::Rotation2d(0_deg)};
+using namespace pathplanner;
 
 Odometry::Odometry () {
+    
     // Configure the AutoBuilder last
     struct RobotConfig {
         double maxSpeed;     // Maximum speed of the robot
         double maxAngularSpeed; // Maximum angular speed of the robot
     };
     Drivetrain drivetrain;
-    RobotConfig robotConfig{3.0, 1.5};
+    pathplanner::RobotConfig robotConfig = pathplanner::RobotConfig::fromGUISettings();
     bool shouldFlipPath = false;
-        pathplanner::AutoBuilder::configure(
-            [this](units::length::meter_t positionFWDField, units::length::meter_t positionSTRField, units::degree_t ROT) {return getPose();},
-            [this](const frc::Pose2d& pose) {ResetPose(pose);},
-            [this]() -> frc::ChassisSpeeds { return frc::ChassisSpeeds{1_mps, 0_mps, 0.5_rad_per_s}; },
-            [&drivetrain](const frc::ChassisSpeeds& speeds) {        // Lambda to drive the robot
+        AutoBuilder::configure(
+            [this]() {return getPose();},
+            [this](frc::Pose2d pose){ ResetPose(pose); },
+            [this](){ return GetRobotRelativeSpeeds(); },
+            [&drivetrain](frc::ChassisSpeeds speeds) {        // Lambda to drive the robot
                 drivetrain.Drive(speeds);
             },
-            controller,
+             std::make_shared<PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
+            PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+            PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+        ),
             robotConfig,
-            []() -> bool { return true; },
+            []() {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+            auto alliance = frc::DriverStation::GetAlliance();
+            if (alliance) {
+                return alliance.value() == frc::DriverStation::Alliance::kRed;
+            }
+            return false;
+        },
             &drivetrain
          );
 }
@@ -37,13 +62,20 @@ frc::Pose2d getPose() {
     return frc::Pose2d(positionFWDField, positionSTRField, frc::Rotation2d(ROT));
 }
 
-void ResetPose(const frc::Pose2d& pose) {
-    // Reset the robot's odometry to the specified pose
-}
-
 frc::ChassisSpeeds GetRobotRelativeSpeeds() {
     // Return the current robot-relative ChassisSpeeds
+    Drivetrain drivetrain;
+    return drivetrain.m_kinematics.ToChassisSpeeds(
+  frontLeftState, frontRightState, backLeftState, backRightState);
 }
+
+void ResetPose(frc::Pose2d pose) {
+    // Reset the robot's odometry to the specified pose
+    ROT = pose.Rotation().Radians();
+    positionFWDField = pose.Translation().X();
+    positionSTRField = pose.Translation().Y();
+}
+
 
 void DriveRobotRelative(const frc::ChassisSpeeds& speeds) {
     // Command the robot to move with the specified robot-relative ChassisSpeeds
@@ -100,6 +132,12 @@ void Odometry::Update(
 
     positionFWDField -= FWD * deltaTime;
     positionSTRField += STR * deltaTime;
+
+    frontLeftState = frc::SwerveModuleState{units::meters_per_second_t(wheelSpeedFL), frc::Rotation2d(units::degree_t(angleFL))};
+    frontRightState = frc::SwerveModuleState{units::meters_per_second_t(wheelSpeedFR), frc::Rotation2d(units::degree_t(angleFR))};
+    backLeftState = frc::SwerveModuleState{units::meters_per_second_t(wheelSpeedBL), frc::Rotation2d(units::degree_t(angleBL))};
+    backRightState = frc::SwerveModuleState{units::meters_per_second_t(wheelSpeedBR), frc::Rotation2d(units::degree_t(angleBR))};
+    
 
     //frc::SmartDashboard::PutNumber("positionFWDField", positionFWDField);
     //frc::SmartDashboard::PutNumber("positionSTRField", positionSTRField);
