@@ -4,12 +4,6 @@
 
 #include "Robot.h"
 
-#include <fmt/core.h>
-#include <frc/smartdashboard/SmartDashboard.h>
-#include <frc/TimedRobot.h>
-#include <frc/XboxController.h>
-#include <rev/SparkMax.h>
-
 float x = 0;// left joystick x-axis
 float y = 0;// left joystick y-axis
 float x2 = 0;// right joystick x-axis
@@ -17,6 +11,7 @@ float triggerL = 0;
 float triggerR = 0;
 bool FieldCentric = true;
 
+Drivetrain m_swerve;
 
 void Robot::RobotInit() {
   // Code executed when the robot is initialized
@@ -24,10 +19,6 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Straight I", 0.0);
   frc::SmartDashboard::PutNumber("Not Straight D", 0.0);
   comp.EnableDigital();
-  //rev::spark::SparkClosedLoopController indexer_controller = indexer.GetClosedLoopController();
-  rev::spark::SparkBaseConfig config;
-  config.OpenLoopRampRate(1);
-  indexer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
 
   // Setting default options for autonomous mode
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
@@ -46,14 +37,15 @@ void Robot::RobotPeriodic() {
   if (stick.GetRawButtonPressed(8) == true){
     Pigeon2.Reset();
   }
-
-  rawGyroValue = (fmod((Pigeon2.GetAngle() + 360.0), 360.0));  // Replace this with your actual gyro reading
+  double rawangle = Pigeon2.GetYaw().GetValueAsDouble();
+  rawGyroValue = double(fmod((rawangle + 360.0), 360.0));  // Replace this with your actual gyro reading
   // Apply the low-pass filter
   GyroValue = alpha * rawGyroValue + (1.0 - alpha) * GyroValue;
 }
 
 void Robot::AutonomousInit() {
   // Code executed when autonomous mode is initialized
+  FieldCentric = true;
   // Selecting autonomous mode
   m_autoSelected = m_chooser.GetSelected();
   fmt::print("Auto selected: {}\n", m_autoSelected);
@@ -62,45 +54,10 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   // Code executed periodically during autonomous mode
 
-  
-
   if (m_autoSelected == kAutoNameCustom) {
-  
-  FieldCentric = false;
-  RobotStrRaw = RobotStrPID.Calculate(atDistance,5);
-  double strEr = RobotStrPID.GetPositionError();
-  if (strEr >= 0.2||strEr<=-0.2) {
-    RobotStrSpd = RobotStrRaw;
-  } else {
-    RobotStrSpd = 0;}
-  std::vector<double> tangle = {+tAngleHorizontal, +RobotStrSpd};
-  double maxtangle = *std::max_element(tangle.begin(), tangle.end());
-
-  if (tAngleHorizontal+tAngleVertical == 0) {
-    x2 = 0.6;
-  }
-
-  if (RobotRotVel >= 1) {
-    RobotRotVel /= RobotRotVel;
-    x2 = RobotRotVel;
-  } else {
-    x2 = RobotRotVel;}
-  if (abs(maxtangle) >= 1) {
-    y = -(RobotStrSpd/maxtangle);
-  } else {
-    y = -RobotStrSpd;}
-  x=0;
-  if (x2!=0&&y!=0){
-    x2 *= abs(y);}
-  m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR, FieldCentric);
-
+ 
   } else if (m_autoSelected == kAutoNameDefault) {
-    //double rob2x = Pigeon2.GetQuatX();
-    double strEr = RobotStrPID.GetPositionError();
-  if (strEr >= 0.2||strEr<=-0.2) {
-    RobotStrSpd = RobotStrRaw;
-  } else {
-    RobotStrSpd = 0;}
+
   }
 }
 
@@ -152,6 +109,8 @@ void Robot::TeleopPeriodic() {
   else {x=0;}
   if ((rawy >= 0.1)||(rawy <= -0.1)){y = -(rawy);}
   else {y=0;}
+  if ((rawx2>= 0.2)||(rawx2<= -0.2)){x2=rawx2*2;}
+  else {x2=0;}
 
   if (field_chooser.GetSelected()=="FieldCentric"){
     FieldCentric = true;
@@ -159,17 +118,6 @@ void Robot::TeleopPeriodic() {
     FieldCentric = false;
   }
 
-  if (stick.GetAButton()==true) {
-    if (RobotRotVel >= 1) {
-      RobotRotVel /= RobotRotVel;
-      x2 = RobotRotVel;
-    } else {
-      x2 = RobotRotVel;
-    }
-    } else {
-      if ((rawx2>= 0.2)||(rawx2<= -0.2)){x2=rawx2*2;}
-    else {x2=0;}
-    }
   m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 
 }

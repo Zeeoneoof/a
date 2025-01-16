@@ -1,6 +1,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 #include "Drivetrain.h"
+#include "Robot.h"
 
 double currentDegrees[4];
 double previousDegreesFL;
@@ -25,38 +26,25 @@ double calculateAngle(double currentVoltage,int i,double MaxV){
 }
 
 Drivetrain::Drivetrain () {
-    rev::spark::SparkBaseConfig config;
     config.ClosedLoopRampRate(1);
+    config.SetIdleMode(rev::spark::SparkMaxConfig::IdleMode::kBrake);
 
-    m_FL_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_FR_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BL_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BR_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
+    m_FL_Drive.Configure(config, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
+    m_FR_Drive.Configure(config, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
+    m_BL_Drive.Configure(config, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
+    m_BR_Drive.Configure(config, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
 
     //Talon FX
     //m_FL_Drive2.ClearStickyFaults();
     //m_FL_Drive2.SetNeutralMode(ctre::phoenix6::signals::NeutralModeValue::Brake);
-    
-    rev::spark::SparkBaseConfig config2;
 
-    m_FL_Drive.Configure(config2, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_FR_Drive.Configure(config2, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BL_Drive.Configure(config2, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BR_Drive.Configure(config2, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    
-    config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kBrake);
+    config2.ClosedLoopRampRate(1);
+    config2.SetIdleMode(rev::spark::SparkMaxConfig::IdleMode::kCoast);
 
-    m_FL_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_FR_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BL_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BR_Drive.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-
-    config.SetIdleMode(rev::spark::SparkBaseConfig::IdleMode::kCoast);
-
-    m_FL_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_FR_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BL_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
-    m_BR_Steer.Configure(config, rev::spark::SparkBase::ResetMode::kResetSafeParameters, rev::spark::SparkBase::PersistMode::kPersistParameters);
+    m_FL_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
+    m_FR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
+    m_BL_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
+    m_BR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
 }
 Odometry m_odometry;
 void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric)  {
