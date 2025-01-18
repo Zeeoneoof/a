@@ -16,6 +16,11 @@
 #include <frc2/command/SubsystemBase.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/Compressor.h>
+#include <pathplanner/lib/auto/AutoBuilder.h>
+#include <pathplanner/lib/path/PathPlannerPath.h>
+#include <pathplanner/lib/config/RobotConfig.h>
+#include <pathplanner/lib/commands/PathPlannerAuto.h>
+#include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 #include "math.h"
 
 #include "Odometry.h"
@@ -33,6 +38,22 @@ class Drivetrain : public frc2::SubsystemBase {
         }
         bool initialize();
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
+        void Odometry();
+        frc::Pose2d getPose();
+        void ResetPose(const frc::Pose2d& pose);
+        frc::ChassisSpeeds GetRobotRelativeSpeeds();
+        void Drive(auto speeds);
+        frc2::CommandPtr getAutonomousCommand();
+        void odometryUpdate(
+        double angleFL, 
+        double angleFR, 
+        double angleBL, 
+        double angleBR, 
+        double wheelSpeedFL,
+        double wheelSpeedFR,
+        double wheelSpeedBL,
+        double wheelSpeedBR,
+        double GyroValue);
     private:
         Drivetrain();
 
@@ -88,6 +109,5 @@ class Drivetrain : public frc2::SubsystemBase {
         double ROT = 0;
 
         double wheelSpeedFL, wheelSpeedFR, wheelSpeedBL, wheelSpeedBR = 0;
-
 };
 #endif

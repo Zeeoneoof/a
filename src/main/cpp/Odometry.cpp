@@ -1,5 +1,4 @@
-#include "Odometry.h"
-#include "Drivetrain.h"
+/*#include "Drivetrain.h"
 //#include "Robot.h"
 
     double ROT = 0;
@@ -11,7 +10,7 @@
     //Drivetrain m_swerve;
 Drivetrain& m_swerve = Drivetrain::getInstance();
 
-Odometry::Odometry () {
+void Drivetrain::Odometry () {
 
     //Drivetrain m_swerve;
     // Configure the AutoBuilder last
@@ -32,36 +31,36 @@ Odometry::Odometry () {
      );
 }
 
-frc2::CommandPtr Odometry::getAutonomousCommand() {
-        // Load the path you want to follow using its name in the GUI
+frc2::CommandPtr Drivetrain::getAutonomousCommand(){
+    // Load the path you want to follow using its name in the GUI
     auto path = pathplanner::PathPlannerPath::fromPathFile("Example Path");
 
     // Create a path following command using AutoBuilder. This will also trigger event markers.
     return pathplanner::AutoBuilder::followPath(path);
 }
 
-frc::Pose2d Odometry::getPose() {
+frc::Pose2d Drivetrain::getPose() {
     // Return the robot's current pose (e.g., from odometry).
     return frc::Pose2d(positionFWDField, positionSTRField, frc::Rotation2d(units::radian_t(ROT)));
 }
 
-void Odometry::ResetPose(const frc::Pose2d& pose) {
+void Drivetrain::ResetPose(const frc::Pose2d& pose) {
     // Reset the robot's odometry to the specified pose
     positionFWDField = units::length::meter_t(0);
     positionSTRField = units::length::meter_t(0);
     ROT = 0;
 }
 
-frc::ChassisSpeeds Odometry::GetRobotRelativeSpeeds() {
+frc::ChassisSpeeds Drivetrain::GetRobotRelativeSpeeds() {
     // Return the current robot-relative ChassisSpeeds
     return frc::ChassisSpeeds(units::velocity::meters_per_second_t(FWD), units::velocity::meters_per_second_t(STR), units::angular_velocity::radians_per_second_t(ROT)); //(vx, vy, omega)
 }
 
-void Odometry::Drive(auto speeds) {
+void Drivetrain::Drive(auto speeds) {
     m_swerve.Update(double(speeds.vx), double(speeds.vy), double(speeds.omega), 0, 0, 0, false);
 }
 
-void Odometry::Update(        
+void Drivetrain::odometryUpdate(        
     double angleFL, 
     double angleFR, 
     double angleBL, 
@@ -107,4 +106,4 @@ void Odometry::Update(
 
     positionFWDField -=  units::length::meter_t(FWD * deltaTime);
     positionSTRField +=  units::length::meter_t(STR * deltaTime);
-}
+}*/

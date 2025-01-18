@@ -1,6 +1,16 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 #include "Drivetrain.h"
+//#include "Robot.h"
+
+    double ROT = 0;
+    double FWD = 0;
+    double STR = 0;
+    units::length::meter_t positionFWDField = units::length::meter_t(0);
+    units::length::meter_t positionSTRField = units::length::meter_t(0);
+
+    //Drivetrain m_swerve;
+Drivetrain& m_swerve = Drivetrain::getInstance();
 
 double currentDegrees[4];
 double previousDegreesFL;
@@ -26,6 +36,7 @@ double calculateAngle(double currentVoltage,int i,double MaxV){
 }
 
 Drivetrain::Drivetrain () {
+
     config.ClosedLoopRampRate(1);
     config.SetIdleMode(rev::spark::SparkMaxConfig::IdleMode::kBrake);
 
@@ -46,8 +57,6 @@ Drivetrain::Drivetrain () {
     m_BL_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
     m_BR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
 }
-
-Odometry& m_odometry = Odometry::getInstance();
 
 void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric)  {
 
@@ -320,8 +329,7 @@ double wheelSpeedFR = ((FR_Dr_Encoder.GetVelocity()/60)/8.8)*(M_PI/10);
 double wheelSpeedBL = ((BL_Dr_Encoder.GetVelocity()/60)/8.8)*(M_PI/10);
 double wheelSpeedBR = ((BR_Dr_Encoder.GetVelocity()/60)/8.8)*(M_PI/10);
 
-
-m_odometry.Update(        
+  odometryUpdate(        
     currentDegrees[0], 
     currentDegrees[1], 
     currentDegrees[2], 
@@ -331,4 +339,102 @@ m_odometry.Update(
     wheelSpeedBL,
     wheelSpeedBR,
     GyroValue);
+}
+
+void Drivetrain::Odometry () {
+
+    //Drivetrain m_swerve;
+    // Configure the AutoBuilder last
+    pathplanner::RobotConfig robot_config = pathplanner::RobotConfig::fromGUISettings();
+
+    pathplanner::AutoBuilder::configure(
+        [this]() {return getPose();},
+        [this](frc::Pose2d pose) {ResetPose(pose);},
+        [this]() { return GetRobotRelativeSpeeds(); },
+        [this](auto speeds) {Drive(speeds);},
+        std::make_shared<pathplanner::PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
+        pathplanner::PIDConstants(1.0, 0.0, 0.0), // Translation PID constants
+        pathplanner::PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
+    ),
+        robot_config,
+        []() { return true; },
+        this
+     );
+}
+
+frc2::CommandPtr Drivetrain::getAutonomousCommand(){
+    // Load the path you want to follow using its name in the GUI
+    auto path = pathplanner::PathPlannerPath::fromPathFile("Example Path");
+
+    // Create a path following command using AutoBuilder. This will also trigger event markers.
+    return pathplanner::AutoBuilder::followPath(path);
+}
+
+frc::Pose2d Drivetrain::getPose() {
+    // Return the robot's current pose (e.g., from odometry).
+    return frc::Pose2d(positionFWDField, positionSTRField, frc::Rotation2d(units::radian_t(ROT)));
+}
+
+void Drivetrain::ResetPose(const frc::Pose2d& pose) {
+    // Reset the robot's odometry to the specified pose
+    positionFWDField = units::length::meter_t(0);
+    positionSTRField = units::length::meter_t(0);
+    ROT = 0;
+}
+
+frc::ChassisSpeeds Drivetrain::GetRobotRelativeSpeeds() {
+    // Return the current robot-relative ChassisSpeeds
+    return frc::ChassisSpeeds(units::velocity::meters_per_second_t(FWD), units::velocity::meters_per_second_t(STR), units::angular_velocity::radians_per_second_t(ROT)); //(vx, vy, omega)
+}
+
+void Drivetrain::Drive(auto speeds) {
+    Update(double(speeds.vx), double(speeds.vy), double(speeds.omega), 0, 0, 0, false);
+}
+
+void Drivetrain::odometryUpdate(        
+    double angleFL, 
+    double angleFR, 
+    double angleBL, 
+    double angleBR, 
+    double wheelSpeedFL,
+    double wheelSpeedFR,
+    double wheelSpeedBL,
+    double wheelSpeedBR,
+    double GyroValue) {
+
+    units::time::second_t currentTime = frc::Timer::GetFPGATimestamp();
+    double deltaTime = double(currentTime) - double(lastTime);
+    lastTime = currentTime; 
+
+    double B_FL = sin(angleFL) * wheelSpeedFL;
+    double B_FR = sin(angleFR) * wheelSpeedFR;
+    double A_BL = sin(angleBL) * wheelSpeedBL;
+    double A_BR = sin(angleBR) * wheelSpeedBR;
+
+    double D_FL = cos(angleFL) * wheelSpeedFL;
+    double C_FR = cos(angleFR) * wheelSpeedFR;
+    double D_BL = cos(angleBL) * wheelSpeedBL;
+    double C_BR = cos(angleBR) * wheelSpeedBR;
+
+    double A = (A_BL + A_BR) / 2;
+    double B = (B_FL + B_FR) / 2;
+    double C = (C_FR + C_BR) / 2;
+    double D = (D_FL + D_BL) / 2;
+
+    ROT = (GyroValue*M_PI/180)/double(currentTime);
+
+    double FWD1 = ROT * (L / 2) + A;
+    double FWD2 = -ROT * (L / 2) + B;
+    FWD = (FWD1 + FWD2) / 2;
+
+    double STR1 = ROT * (W / 2) + C;
+    double STR2 = -ROT * (W / 2) + D;
+    STR = (STR1 + STR2) / 2;
+    
+    double temp = FWD * cos(GyroValue) + STR * sin(GyroValue);
+    STR = STR * cos(GyroValue) - FWD * sin(GyroValue);
+    FWD = temp;
+
+    positionFWDField -=  units::length::meter_t(FWD * deltaTime);
+    positionSTRField +=  units::length::meter_t(STR * deltaTime);
 }

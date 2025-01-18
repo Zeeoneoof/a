@@ -11,6 +11,8 @@ float triggerL = 0;
 float triggerR = 0;
 bool FieldCentric = true;
 
+Drivetrain& drivetrain2 = Drivetrain::getInstance();
+
 void Robot::RobotInit() {
   // Code executed when the robot is initialized
   frc::SmartDashboard::PutNumber("Straight P", 0.02);
@@ -47,16 +49,20 @@ void Robot::AutonomousInit() {
   // Selecting autonomous mode
   m_autoSelected = m_chooser.GetSelected();
   fmt::print("Auto selected: {}\n", m_autoSelected);
+  drivetrain2.Odometry();
+  frc2::CommandPtr path = drivetrain2.getAutonomousCommand();
+  path.Schedule();
 }
 
 void Robot::AutonomousPeriodic() {
   // Code executed periodically during autonomous mode
-
   if (m_autoSelected == kAutoNameCustom) {
+    frc2::CommandScheduler::GetInstance().Run();
  
   } else if (m_autoSelected == kAutoNameDefault) {
 
   }
+  //drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 }
 
 void Robot::TeleopInit() {
@@ -116,7 +122,7 @@ void Robot::TeleopPeriodic() {
     FieldCentric = false;
   }
 
-  //m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
+  drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 
 }
 

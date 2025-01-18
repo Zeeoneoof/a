@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include <frc/Timer.h>
 #include "math.h"
@@ -20,8 +20,8 @@ class Odometry {
         frc::Pose2d getPose();
         void ResetPose(const frc::Pose2d& pose);
         frc::ChassisSpeeds GetRobotRelativeSpeeds();
-        frc2::CommandPtr getAutonomousCommand();
         void Drive(auto speeds);
+        frc2::CommandPtr getAutonomousCommand();
         void Update(
         double angleFL, 
         double angleFR, 
@@ -37,4 +37,4 @@ class Odometry {
         const float W = 0.5461;
 
         units::time::second_t lastTime = units::time::second_t(0);
-};
+};*/
