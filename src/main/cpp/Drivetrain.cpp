@@ -1,7 +1,6 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 #include "Drivetrain.h"
-#include "Robot.h"
 
 double currentDegrees[4];
 double previousDegreesFL;
@@ -23,6 +22,7 @@ double calculateAngle(double currentVoltage,int i,double MaxV){
   if (i < numEncoders){
     return currentDegrees[i] = ((currentVoltage/MaxV)*(2*M_PI));
   }
+  return currentDegrees[i] = 0;
 }
 
 Drivetrain::Drivetrain () {
@@ -46,12 +46,18 @@ Drivetrain::Drivetrain () {
     m_BL_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
     m_BR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
 }
-Odometry m_odometry;
+
+Odometry& m_odometry = Odometry::getInstance();
+
 void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric)  {
 
   straightP = frc::SmartDashboard::GetNumber("Straight P", 0.02);
   straightI = frc::SmartDashboard::GetNumber("Straight I", 0);
   straightD = frc::SmartDashboard::GetNumber("Not Straight D", 0);
+
+  frc::SmartDashboard::PutNumber("speeds.FWD", x);
+  frc::SmartDashboard::PutNumber("speeds.STR", y);
+  frc::SmartDashboard::PutNumber("speeds.ROT", x2);
 
   //ctre::phoenix6::StatusSignal<units::angle::turn_t> CANcoderFLAngle = CANcoderFL.GetPosition();
   //double CANcoderFLpos = double(CANcoderFLpos);

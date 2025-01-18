@@ -11,8 +11,6 @@ float triggerL = 0;
 float triggerR = 0;
 bool FieldCentric = true;
 
-Drivetrain m_swerve;
-
 void Robot::RobotInit() {
   // Code executed when the robot is initialized
   frc::SmartDashboard::PutNumber("Straight P", 0.02);
@@ -118,7 +116,7 @@ void Robot::TeleopPeriodic() {
     FieldCentric = false;
   }
 
-  m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
+  //m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 
 }
 
@@ -126,7 +124,7 @@ void Robot::DisabledInit() {}
 
 void Robot::DisabledPeriodic() {
 
-m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
+//m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 
 }
 void Robot::TestInit() {}

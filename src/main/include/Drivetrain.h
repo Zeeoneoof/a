@@ -22,21 +22,30 @@
 
 static const int numEncoders = 4;
 
+#ifndef DRIVETRAIN_H
+#define DRIVETRAIN_H
+
 class Drivetrain : public frc2::SubsystemBase {
     public:
-        Drivetrain();
+        static Drivetrain& getInstance() {
+            static Drivetrain instance;
+            return instance;
+        }
+        bool initialize();
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
-        //void Drive(const frc::ChassisSpeeds& speeds);  // Simple placeholder method
     private:
+        Drivetrain();
 
         //Talon FX
         //ctre::phoenix6::hardware::TalonFX m_FL_Drive2{11/*CAN ID*/};
         //ctre::phoenix6::hardware::CANcoder CANcoderFL{9/*CAN ID*/}
         //Drive motors
+
         rev::spark::SparkMax m_FL_Drive{11, rev::spark::SparkMax::MotorType::kBrushless};
         rev::spark::SparkMax m_FR_Drive{6, rev::spark::SparkMax::MotorType::kBrushless};
         rev::spark::SparkMax m_BL_Drive{13, rev::spark::SparkMax::MotorType::kBrushless};
         rev::spark::SparkMax m_BR_Drive{8, rev::spark::SparkMax::MotorType::kBrushless};
+
         rev::spark::SparkRelativeEncoder FL_Dr_Encoder = m_FL_Drive.GetEncoder();
         rev::spark::SparkRelativeEncoder FR_Dr_Encoder = m_FR_Drive.GetEncoder();
         rev::spark::SparkRelativeEncoder BL_Dr_Encoder = m_BL_Drive.GetEncoder();
@@ -81,3 +90,4 @@ class Drivetrain : public frc2::SubsystemBase {
         double wheelSpeedFL, wheelSpeedFR, wheelSpeedBL, wheelSpeedBR = 0;
 
 };
+#endif

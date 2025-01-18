@@ -1,4 +1,6 @@
 #include "Odometry.h"
+#include "Drivetrain.h"
+//#include "Robot.h"
 
     double ROT = 0;
     double FWD = 0;
@@ -6,10 +8,12 @@
     units::length::meter_t positionFWDField = units::length::meter_t(0);
     units::length::meter_t positionSTRField = units::length::meter_t(0);
 
+    //Drivetrain m_swerve;
+Drivetrain& m_swerve = Drivetrain::getInstance();
+
 Odometry::Odometry () {
-    
-    drivetrain = std::make_unique<Drivetrain>();
-    
+
+    //Drivetrain m_swerve;
     // Configure the AutoBuilder last
     pathplanner::RobotConfig robot_config = pathplanner::RobotConfig::fromGUISettings();
 
@@ -17,14 +21,14 @@ Odometry::Odometry () {
         [this]() {return getPose();},
         [this](frc::Pose2d pose) {ResetPose(pose);},
         [this]() { return GetRobotRelativeSpeeds(); },
-        [this](auto speeds) {DriveRobotRelative(speeds);},
+        [this](auto speeds) {Drive(speeds);},
         std::make_shared<pathplanner::PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
         pathplanner::PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
         pathplanner::PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
     ),
         robot_config,
         []() { return true; },
-        drivetrain.get()
+        &Drivetrain::getInstance()
      );
 }
 
@@ -53,14 +57,9 @@ frc::ChassisSpeeds Odometry::GetRobotRelativeSpeeds() {
     return frc::ChassisSpeeds(units::velocity::meters_per_second_t(FWD), units::velocity::meters_per_second_t(STR), units::angular_velocity::radians_per_second_t(ROT)); //(vx, vy, omega)
 }
 
-void Odometry::DriveRobotRelative(const frc::ChassisSpeeds& speeds) {
-    // Command the robot to move with the specified robot-relative ChassisSpeeds
-    //speeds.vx, swpeeds.vy, speeds.omega
-    frc::SmartDashboard::PutNumber("speeds.FWD", double(speeds.vx));
-    frc::SmartDashboard::PutNumber("speeds.STR", double(speeds.vy));
-    frc::SmartDashboard::PutNumber("speeds.ROT", double(speeds.omega));
-}   
-
+void Odometry::Drive(auto speeds) {
+    m_swerve.Update(double(speeds.vx), double(speeds.vy), double(speeds.omega), 0, 0, 0, false);
+}
 
 void Odometry::Update(        
     double angleFL, 
