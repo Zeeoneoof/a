@@ -23,8 +23,6 @@
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 #include "math.h"
 
-#include "Odometry.h"
-
 static const int numEncoders = 4;
 
 #ifndef DRIVETRAIN_H
@@ -36,14 +34,14 @@ class Drivetrain : public frc2::SubsystemBase {
             static Drivetrain instance;
             return instance;
         }
-        bool initialize();
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
         void Odometry();
         frc::Pose2d getPose();
-        void ResetPose(const frc::Pose2d& pose);
-        frc::ChassisSpeeds GetRobotRelativeSpeeds();
+        void resetPose(const frc::Pose2d& pose);
+        frc::ChassisSpeeds getRobotRelativeSpeeds();
         void Drive(auto speeds);
-        frc2::CommandPtr getAutonomousCommand();
+        pathplanner::AutoBuilder autoBuilder; // Add this line
+
         void odometryUpdate(
         double angleFL, 
         double angleFR, 
@@ -56,7 +54,7 @@ class Drivetrain : public frc2::SubsystemBase {
         double GyroValue);
     private:
         Drivetrain();
-
+        
         //Talon FX
         //ctre::phoenix6::hardware::TalonFX m_FL_Drive2{11/*CAN ID*/};
         //ctre::phoenix6::hardware::CANcoder CANcoderFL{9/*CAN ID*/}

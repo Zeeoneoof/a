@@ -33,14 +33,15 @@ void Robot::RobotInit() {
 }
 
 void Robot::RobotPeriodic() {
-  // Code executed periodically during teleop mode
+  /*// Code executed periodically during teleop mode
   if (stick.GetRawButtonPressed(8) == true){
     Pigeon2.Reset();
   }
   double rawangle = Pigeon2.GetYaw().GetValueAsDouble();
   rawGyroValue = double(fmod((rawangle + 360.0), 360.0));  // Replace this with your actual gyro reading
   // Apply the low-pass filter
-  GyroValue = alpha * rawGyroValue + (1.0 - alpha) * GyroValue;
+  GyroValue = alpha * rawGyroValue + (1.0 - alpha) * GyroValue;*/
+  GyroValue = 0;
 }
 
 void Robot::AutonomousInit() {
@@ -49,9 +50,10 @@ void Robot::AutonomousInit() {
   // Selecting autonomous mode
   m_autoSelected = m_chooser.GetSelected();
   fmt::print("Auto selected: {}\n", m_autoSelected);
-  drivetrain2.Odometry();
-  frc2::CommandPtr path = drivetrain2.getAutonomousCommand();
-  path.Schedule();
+
+  auto path = pathplanner::PathPlannerPath::fromPathFile("Example Path");
+  frc2::CommandPtr pathCommand = drivetrain2.autoBuilder.followPath(path);
+  pathCommand.Schedule();
 }
 
 void Robot::AutonomousPeriodic() {
@@ -60,7 +62,7 @@ void Robot::AutonomousPeriodic() {
     frc2::CommandScheduler::GetInstance().Run();
  
   } else if (m_autoSelected == kAutoNameDefault) {
-
+    
   }
   //drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 }
@@ -73,7 +75,7 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
   // Code executed periodically during teleop mode
-
+  
   // Get joystick inputs
   // Retrieve joystick inputs
   float rawx = stick.GetRawAxis(0);
