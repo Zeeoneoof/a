@@ -18,9 +18,12 @@
 #include <frc/Compressor.h>
 #include <pathplanner/lib/auto/AutoBuilder.h>
 #include <pathplanner/lib/path/PathPlannerPath.h>
+#include <pathplanner/lib/commands/PathPlannerAuto.h>
 #include <pathplanner/lib/config/RobotConfig.h>
 #include <pathplanner/lib/commands/PathPlannerAuto.h>
 #include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
+#include <frc/geometry/Pose2d.h>
+#include <frc/DriverStation.h>
 #include "math.h"
 
 static const int numEncoders = 4;
@@ -30,17 +33,11 @@ static const int numEncoders = 4;
 
 class Drivetrain : public frc2::SubsystemBase {
     public:
-        static Drivetrain& getInstance() {
-            static Drivetrain instance;
-            return instance;
-        }
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
-        void Odometry();
         frc::Pose2d getPose();
-        void resetPose(const frc::Pose2d& pose);
+        void resetPose(frc::Pose2d pose);
         frc::ChassisSpeeds getRobotRelativeSpeeds();
-        void Drive(auto speeds);
-        pathplanner::AutoBuilder autoBuilder; // Add this line
+        void driveRobotRelative(frc::ChassisSpeeds speeds);
 
         void odometryUpdate(
         double angleFL, 
@@ -52,8 +49,11 @@ class Drivetrain : public frc2::SubsystemBase {
         double wheelSpeedBL,
         double wheelSpeedBR,
         double GyroValue);
-    private:
+
         Drivetrain();
+    private:
+        // Configure the AutoBuilder last
+        pathplanner::RobotConfig robot_config = pathplanner::RobotConfig::fromGUISettings();
         
         //Talon FX
         //ctre::phoenix6::hardware::TalonFX m_FL_Drive2{11/*CAN ID*/};

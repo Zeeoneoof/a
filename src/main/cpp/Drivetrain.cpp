@@ -1,16 +1,13 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 #include "Drivetrain.h"
-//#include "Robot.h"
 
-    double ROT = 0;
-    double FWD = 0;
-    double STR = 0;
-    units::length::meter_t positionFWDField = units::length::meter_t(0);
-    units::length::meter_t positionSTRField = units::length::meter_t(0);
-
-    //Drivetrain m_swerve;
-Drivetrain& m_swerve = Drivetrain::getInstance();
+double ROT = 0;
+double FWD = 0;
+double STR = 0;
+units::length::meter_t positionFWDField = units::length::meter_t(0);
+units::length::meter_t positionSTRField = units::length::meter_t(0);
+frc::Rotation2d ROTField = frc::Rotation2d(units::radian_t(0));
 
 double currentDegrees[4];
 double previousDegreesFL;
@@ -36,22 +33,6 @@ double calculateAngle(double currentVoltage,int i,double MaxV){
 }
 
 Drivetrain::Drivetrain () {
-    // Configure the AutoBuilder last
-    pathplanner::RobotConfig robot_config = pathplanner::RobotConfig::fromGUISettings();
-
-    autoBuilder.configure(
-        [this]() {return getPose();},
-        [this](const frc::Pose2d& pose) {resetPose(pose);},
-        [this]() {return getRobotRelativeSpeeds();},
-        [this](auto speeds) {Drive(speeds);},
-        std::make_shared<pathplanner::PPHolonomicDriveController>( // PPHolonomicController is the built in path following controller for holonomic drive trains
-        pathplanner::PIDConstants(1.0, 0.0, 0.0), // Translation PID constants
-        pathplanner::PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
-    ),
-        robot_config,
-        [this]() { return false; },
-        this
-    );
 
     config.ClosedLoopRampRate(1);
     config.SetIdleMode(rev::spark::SparkMaxConfig::IdleMode::kBrake);
@@ -72,6 +53,50 @@ Drivetrain::Drivetrain () {
     m_FR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
     m_BL_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
     m_BR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
+
+    pathplanner::AutoBuilder::configure(
+        [this]() { return getPose(); },
+        [this](frc::Pose2d pose) { resetPose(pose); },
+        [this]() { return getRobotRelativeSpeeds(); },
+        [this](auto speeds, auto feedforwards){ driveRobotRelative(speeds); },
+        std::make_shared<pathplanner::PPHolonomicDriveController>(
+          pathplanner::PIDConstants(5.0, 0.0, 0.0), 
+          pathplanner::PIDConstants(5.0, 0.0, 0.0) 
+        ),
+        robot_config,
+        []() {
+            auto alliance = frc::DriverStation::GetAlliance();
+            if (alliance) {
+                return alliance.value() == frc::DriverStation::Alliance::kRed;
+            }
+            return false;
+        },
+        this
+    );
+}
+
+frc::Pose2d Drivetrain::getPose() {
+    // Return the robot's current pose (e.g., from odometry).
+    return frc::Pose2d(positionFWDField, positionSTRField, ROTField);
+}
+
+void Drivetrain::resetPose(frc::Pose2d pose) {
+    // Reset the robot's odometry to the specified pose
+    positionFWDField = pose.X();
+    positionSTRField = pose.Y();
+    ROTField = pose.Rotation();
+}
+
+frc::ChassisSpeeds Drivetrain::getRobotRelativeSpeeds() {
+    // Return the current robot-relative ChassisSpeeds
+    return frc::ChassisSpeeds(units::velocity::meters_per_second_t(FWD), units::velocity::meters_per_second_t(STR), units::angular_velocity::radians_per_second_t(ROT)); //(vx, vy, omega)
+}
+
+void Drivetrain::driveRobotRelative(frc::ChassisSpeeds speeds) {
+    //Update(double(speeds.vx), double(speeds.vy), double(speeds.omega), 0, 0, 0, false);
+    frc::SmartDashboard::PutNumber("speeds.FWD", double(speeds.vx));
+    frc::SmartDashboard::PutNumber("speeds.STR", double(speeds.vy));
+    frc::SmartDashboard::PutNumber("speeds.ROT", double(speeds.omega));
 }
 
 void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric)  {
@@ -353,30 +378,6 @@ double wheelSpeedBR = ((BR_Dr_Encoder.GetVelocity()/60)/8.8)*(M_PI/10);
     GyroValue);
 }
 
-frc::Pose2d Drivetrain::getPose() {
-    // Return the robot's current pose (e.g., from odometry).
-    return frc::Pose2d(positionFWDField, positionSTRField, frc::Rotation2d(units::radian_t(ROT)));
-}
-
-void Drivetrain::resetPose(const frc::Pose2d& pose) {
-    // Reset the robot's odometry to the specified pose
-    positionFWDField = units::length::meter_t(0);
-    positionSTRField = units::length::meter_t(0);
-    ROT = 0;
-}
-
-frc::ChassisSpeeds Drivetrain::getRobotRelativeSpeeds() {
-    // Return the current robot-relative ChassisSpeeds
-    return frc::ChassisSpeeds(units::velocity::meters_per_second_t(FWD), units::velocity::meters_per_second_t(STR), units::angular_velocity::radians_per_second_t(ROT)); //(vx, vy, omega)
-}
-
-void Drivetrain::Drive(auto speeds) {
-    //Update(double(speeds.vx), double(speeds.vy), double(speeds.omega), 0, 0, 0, false);
-    frc::SmartDashboard::PutNumber("speeds.FWD", double(speeds.vx));
-    frc::SmartDashboard::PutNumber("speeds.STR", double(speeds.vy));
-    frc::SmartDashboard::PutNumber("speeds.ROT", double(speeds.omega));
-}
-
 void Drivetrain::odometryUpdate(        
     double angleFL, 
     double angleFR, 
@@ -423,4 +424,5 @@ void Drivetrain::odometryUpdate(
 
     positionFWDField -=  units::length::meter_t(FWD * deltaTime);
     positionSTRField +=  units::length::meter_t(STR * deltaTime);
+    ROTField = frc::Rotation2d(units::angle::radian_t(ROT));
 }

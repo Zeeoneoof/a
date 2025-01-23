@@ -9,9 +9,9 @@ float y = 0;// left joystick y-axis
 float x2 = 0;// right joystick x-axis
 float triggerL = 0;
 float triggerR = 0;
-bool FieldCentric = true;
+bool FieldCentric = false;
 
-Drivetrain& drivetrain2 = Drivetrain::getInstance();
+Drivetrain drivetrain2;
 
 void Robot::RobotInit() {
   // Code executed when the robot is initialized
@@ -46,30 +46,32 @@ void Robot::RobotPeriodic() {
 
 void Robot::AutonomousInit() {
   // Code executed when autonomous mode is initialized
-  FieldCentric = true;
+  FieldCentric = false;
   // Selecting autonomous mode
   m_autoSelected = m_chooser.GetSelected();
   fmt::print("Auto selected: {}\n", m_autoSelected);
 
+  frc2::CommandScheduler::GetInstance().CancelAll();
   auto path = pathplanner::PathPlannerPath::fromPathFile("Example Path");
-  frc2::CommandPtr pathCommand = drivetrain2.autoBuilder.followPath(path);
-  pathCommand.Schedule();
+  frc2::CommandPtr pathCommand = pathplanner::AutoBuilder::followPath(path);
+  //frc2::CommandPtr pathCommand = pathplanner::PathPlannerAuto("New Auto").ToPtr();
+  frc2::CommandScheduler::GetInstance().Schedule(pathCommand);
 }
 
 void Robot::AutonomousPeriodic() {
+    drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
   // Code executed periodically during autonomous mode
   if (m_autoSelected == kAutoNameCustom) {
     frc2::CommandScheduler::GetInstance().Run();
  
   } else if (m_autoSelected == kAutoNameDefault) {
-    
+    frc2::CommandScheduler::GetInstance().Run();
   }
-  //drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 }
 
 void Robot::TeleopInit() {
   // Code executed when teleop mode is initialized
-  FieldCentric = true;
+  FieldCentric = false;
   intakeSol.Set(frc::DoubleSolenoid::Value::kReverse);
 }
 
@@ -132,7 +134,7 @@ void Robot::DisabledInit() {}
 
 void Robot::DisabledPeriodic() {
 
-//m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
+drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 
 }
 void Robot::TestInit() {}

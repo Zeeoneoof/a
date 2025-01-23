@@ -13,6 +13,7 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/XboxController.h>
+#include <pathplanner/lib/commands/FollowPathCommand.h>
 
 #include "Drivetrain.h"
 
