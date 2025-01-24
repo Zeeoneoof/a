@@ -13,7 +13,6 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/XboxController.h>
-#include <pathplanner/lib/commands/FollowPathCommand.h>
 
 #include "Drivetrain.h"
 
@@ -45,12 +44,15 @@ class Robot : public frc::TimedRobot {
   double alpha = 1;
   double rawGyroValue = 0.0;
   double rotEr = 0;
-  rev::spark::SparkMax intake{14, rev::spark::SparkMax::MotorType::kBrushless};
-  rev::spark::SparkMax outtakeTilt{17, rev::spark::SparkMax::MotorType::kBrushless};
-  rev::spark::SparkMax indexer{16, rev::spark::SparkMax::MotorType::kBrushless};
-  rev::spark::SparkMax outtake{15, rev::spark::SparkMax::MotorType::kBrushless};
-  frc::Compressor comp{19,frc::PneumaticsModuleType::REVPH};
-  frc::DoubleSolenoid intakeSol{19,frc::PneumaticsModuleType::REVPH,5,7};
+  //Set up Motor Example: rev::spark::SparkMax intake{14, rev::spark::SparkMax::MotorType::kBrushless};
 
-  rev::spark::SparkRelativeEncoder outtakeEnc = outtakeTilt.GetEncoder();
+  //Set up Encoder example: rev::spark::SparkRelativeEncoder outtakeEnc = outtakeTilt.GetEncoder();
+
+  // Set up algae motor
+  rev::spark::SparkMax algaeMotor{14, rev::spark::SparkMax::MotorType::kBrushless};
+
+  // Set up deploy intake motor
+  rev::spark::SparkMax intakeDeployMotor{14, rev::spark::SparkMax::MotorType::kBrushless};
+
+  rev::spark::SparkRelativeEncoder intakeEncoder = intakeDeployMotor.GetEncoder();
 };

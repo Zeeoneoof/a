@@ -16,12 +16,6 @@
 #include <frc2/command/SubsystemBase.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/Compressor.h>
-#include <pathplanner/lib/auto/AutoBuilder.h>
-#include <pathplanner/lib/path/PathPlannerPath.h>
-#include <pathplanner/lib/commands/PathPlannerAuto.h>
-#include <pathplanner/lib/config/RobotConfig.h>
-#include <pathplanner/lib/commands/PathPlannerAuto.h>
-#include <pathplanner/lib/controllers/PPHolonomicDriveController.h>
 #include <frc/geometry/Pose2d.h>
 #include <frc/DriverStation.h>
 #include "math.h"
@@ -34,10 +28,6 @@ static const int numEncoders = 4;
 class Drivetrain : public frc2::SubsystemBase {
     public:
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
-        frc::Pose2d getPose();
-        void resetPose(frc::Pose2d pose);
-        frc::ChassisSpeeds getRobotRelativeSpeeds();
-        void driveRobotRelative(frc::ChassisSpeeds speeds);
 
         void odometryUpdate(
         double angleFL, 
@@ -52,8 +42,6 @@ class Drivetrain : public frc2::SubsystemBase {
 
         Drivetrain();
     private:
-        // Configure the AutoBuilder last
-        pathplanner::RobotConfig robot_config = pathplanner::RobotConfig::fromGUISettings();
         
         //Talon FX
         //ctre::phoenix6::hardware::TalonFX m_FL_Drive2{11/*CAN ID*/};

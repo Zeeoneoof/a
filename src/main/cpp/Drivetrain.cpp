@@ -53,50 +53,6 @@ Drivetrain::Drivetrain () {
     m_FR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
     m_BL_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
     m_BR_Steer.Configure(config2, rev::spark::SparkMax::ResetMode::kNoResetSafeParameters, rev::spark::SparkMax::PersistMode::kNoPersistParameters);
-
-    pathplanner::AutoBuilder::configure(
-        [this]() { return getPose(); },
-        [this](frc::Pose2d pose) { resetPose(pose); },
-        [this]() { return getRobotRelativeSpeeds(); },
-        [this](auto speeds, auto feedforwards){ driveRobotRelative(speeds); },
-        std::make_shared<pathplanner::PPHolonomicDriveController>(
-          pathplanner::PIDConstants(5.0, 0.0, 0.0), 
-          pathplanner::PIDConstants(5.0, 0.0, 0.0) 
-        ),
-        robot_config,
-        []() {
-            auto alliance = frc::DriverStation::GetAlliance();
-            if (alliance) {
-                return alliance.value() == frc::DriverStation::Alliance::kRed;
-            }
-            return false;
-        },
-        this
-    );
-}
-
-frc::Pose2d Drivetrain::getPose() {
-    // Return the robot's current pose (e.g., from odometry).
-    return frc::Pose2d(positionFWDField, positionSTRField, ROTField);
-}
-
-void Drivetrain::resetPose(frc::Pose2d pose) {
-    // Reset the robot's odometry to the specified pose
-    positionFWDField = pose.X();
-    positionSTRField = pose.Y();
-    ROTField = pose.Rotation();
-}
-
-frc::ChassisSpeeds Drivetrain::getRobotRelativeSpeeds() {
-    // Return the current robot-relative ChassisSpeeds
-    return frc::ChassisSpeeds(units::velocity::meters_per_second_t(FWD), units::velocity::meters_per_second_t(STR), units::angular_velocity::radians_per_second_t(ROT)); //(vx, vy, omega)
-}
-
-void Drivetrain::driveRobotRelative(frc::ChassisSpeeds speeds) {
-    //Update(double(speeds.vx), double(speeds.vy), double(speeds.omega), 0, 0, 0, false);
-    frc::SmartDashboard::PutNumber("speeds.FWD", double(speeds.vx));
-    frc::SmartDashboard::PutNumber("speeds.STR", double(speeds.vy));
-    frc::SmartDashboard::PutNumber("speeds.ROT", double(speeds.omega));
 }
 
 void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric)  {
