@@ -11,6 +11,7 @@
 #include <frc/TimedRobot.h>
 #include <frc/DoubleSolenoid.h>
 #include <frc/smartdashboard/SendableChooser.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/XboxController.h>
 
 #include "Drivetrain.h"
@@ -37,18 +38,31 @@ class Robot : public frc::TimedRobot {
   const std::string kAutoNameDefault = "Default";
   const std::string kAutoNameCustom = "My Auto";
   std::string m_autoSelected;
-  ctre::phoenix6::hardware::Pigeon2 Pigeon2{9};
-  //applies smoothing to gyro
-  double GyroValue = 0.0;
-  double alpha = 1;
-  double rawGyroValue = 0.0;
-  double rotEr = 0;
-  rev::spark::SparkMax intake{14, rev::spark::SparkMax::MotorType::kBrushless};
-  rev::spark::SparkMax outtakeTilt{17, rev::spark::SparkMax::MotorType::kBrushless};
-  rev::spark::SparkMax indexer{16, rev::spark::SparkMax::MotorType::kBrushless};
-  rev::spark::SparkMax outtake{15, rev::spark::SparkMax::MotorType::kBrushless};
-  frc::Compressor comp{19,frc::PneumaticsModuleType::REVPH};
-  frc::DoubleSolenoid intakeSol{19,frc::PneumaticsModuleType::REVPH,5,7};
+  /*rev::spark::SparkMax algaeMotor{29, rev::spark::SparkMax::MotorType::kBrushless};
+  bool intakeAlgae = false;*/
 
-  rev::spark::SparkRelativeEncoder outtakeEnc = outtakeTilt.GetEncoder();
+  /*rev::spark::SparkMax intakeDeployMotor{29, rev::spark::SparkMax::MotorType::kBrushless};
+  rev::spark::SparkMax intakeWheels{8, rev::spark::SparkMax::MotorType::kBrushless};
+
+  frc::PIDController intakeDeployPID{0.1, 0, 0};
+
+  rev::spark::SparkRelativeEncoder intakeEncoder = intakeDeployMotor.GetEncoder();*/
+
+  frc::PIDController elevatorPID{0.1, 0, 0};
+
+  /*rev::spark::SparkMax coralMotorHorizontal{14, rev::spark::SparkMax::MotorType::kBrushless};
+  rev::spark::SparkMax coralMotorVertical{14, rev::spark::SparkMax::MotorType::kBrushless};
+*/
+  //rev::spark::SparkMax elevatorMotor1{8, rev::spark::SparkMax::MotorType::kBrushless};
+  //rev::spark::SparkMax elevatorMotor2{29, rev::spark::SparkMax::MotorType::kBrushless};
+
+  //rev::spark::SparkRelativeEncoder elevatorEncoder1 = elevatorMotor1.GetEncoder();
+  //rev::spark::SparkRelativeEncoder elevatorEncoder2 = elevatorMotor2.GetEncoder();
+
+  double x = 0;// left joystick x-axis
+  double y = 0;// left joystick y-axis
+  double x2 = 0;// right joystick x-axis
+  float triggerL = 0;
+  float triggerR = 0;
+  bool FieldCentric = false;
 };

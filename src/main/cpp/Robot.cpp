@@ -4,105 +4,109 @@
 
 #include "Robot.h"
 
-float x = 0;// left joystick x-axis
-float y = 0;// left joystick y-axis
-float x2 = 0;// right joystick x-axis
-float triggerL = 0;
-float triggerR = 0;
-bool FieldCentric = true;
+Drivetrain m_swerve;
 
 void Robot::RobotInit() {
-  // Code executed when the robot is initialized
-  frc::SmartDashboard::PutNumber("Straight P", 0.02);
-  frc::SmartDashboard::PutNumber("Straight I", 0.0);
-  frc::SmartDashboard::PutNumber("Not Straight D", 0.0);
-  comp.EnableDigital();
-
-  // Setting default options for autonomous mode
-  m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
-  m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
-  field_chooser.SetDefaultOption("FieldCentric", "FieldCentric");
-  field_chooser.AddOption("FieldCentric","FieldCentric");
-  field_chooser.AddOption("RobotCentric","RobotCentric");
-  frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
-  frc::SmartDashboard::PutData("Center", &field_chooser);
-
-  outtakeEnc.SetPosition(0);
+  //intakeEncoder.SetPosition(0);
+  //elevatorEncoder1.SetPosition(0);
+  //elevatorEncoder2.SetPosition(0);
 }
 
 void Robot::RobotPeriodic() {
   // Code executed periodically during teleop mode
-  if (stick.GetRawButtonPressed(8) == true){
-    Pigeon2.Reset();
-  }
-  double rawangle = Pigeon2.GetYaw().GetValueAsDouble();
-  rawGyroValue = double(fmod((rawangle + 360.0), 360.0));  // Replace this with your actual gyro reading
-  // Apply the low-pass filter
-  GyroValue = alpha * rawGyroValue + (1.0 - alpha) * GyroValue;
+ 
 }
 
 void Robot::AutonomousInit() {
-  // Code executed when autonomous mode is initialized
-  FieldCentric = true;
-  // Selecting autonomous mode
-  m_autoSelected = m_chooser.GetSelected();
-  fmt::print("Auto selected: {}\n", m_autoSelected);
+
 }
 
 void Robot::AutonomousPeriodic() {
   // Code executed periodically during autonomous mode
-
-  if (m_autoSelected == kAutoNameCustom) {
  
-  } else if (m_autoSelected == kAutoNameDefault) {
-
-  }
+  //drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
 }
 
 void Robot::TeleopInit() {
-  // Code executed when teleop mode is initialized
+  //fmt::print("A value", "running");
+  frc::SmartDashboard::PutString("running", "running");
   FieldCentric = true;
-  intakeSol.Set(frc::DoubleSolenoid::Value::kReverse);
 }
 
 void Robot::TeleopPeriodic() {
-  // Code executed periodically during teleop mode
+  // Algae Manipulator
+  //Runs wheels when button held, toggles Direction each time button pressed
+  /*bool A = stick.GetRawButton(1);
+  bool a = stick.GetRawButtonReleased(1);
+  if (a){intakeAlgae = !intakeAlgae;}
+  algaeMotor.Set(A ? (intakeAlgae ? 0.15 : -0.15) : 0);*/
 
-  // Get joystick inputs
-  // Retrieve joystick inputs
+  // Intake deploy and run motor
+  /*bool B = stick.GetRawButton(2);
+  // If B is pressed, move to setpoint until the intake wheels have resistance.
+  int intakeSetpoint = 10;
+  float position = intakeEncoder.GetPosition();
+  float intakeWheelAmps = intakeWheels.GetOutputCurrent();
+  // Deploy motor code
+  while (B) {
+  //when button held deploy out to setpoint and run intakeWheels while checking for amperage
+    position = intakeEncoder.GetPosition();
+    intakeWheelAmps = intakeWheels.GetOutputCurrent();
+    intakeDeployMotor.Set(std::clamp(intakeDeployPID.Calculate(position, intakeSetpoint), -0.1, 0.1));
+    intakeWheels.Set(0.1);
+    frc::SmartDashboard::PutNumber("position", position);
+    frc::SmartDashboard::PutNumber("intakeWheelAmps", intakeWheelAmps);
+    if (intakeWheelAmps > 3) {
+      break;
+    }
+  }
+  //when button not held revieve back in to 0 in the robot
+  if (position > 2) {
+    intakeDeployMotor.Set(std::clamp(intakeDeployPID.Calculate(position, 0), -0.1, 0.1));
+    position = intakeEncoder.GetPosition();
+    frc::SmartDashboard::PutNumber("position", position);
+  } else {
+    intakeDeployMotor.Set(0);
+  }
+  intakeWheels.Set(0);*/
+
+  //Elevator
+  /*int dpad = stick.GetPOV(0);
+  frc::SmartDashboard::PutNumber("dpad", dpad);
+  if (dpad != -1) {
+    dpad = stick.GetPOV(0);
+    frc::SmartDashboard::PutNumber("dpad", dpad);
+    switch (dpad) {
+    case (0):
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 0), -0.1, 0.1));
+      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), 0), -0.1, 0.1));
+      frc::SmartDashboard::PutNumber("elevatorPos1", elevatorEncoder1.GetPosition());
+      frc::SmartDashboard::PutNumber("elevatorPos2", elevatorEncoder2.GetPosition());
+      frc::SmartDashboard::PutString("elevator", "working");
+      break;
+    case (90):
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 10), -0.1, 0.1));
+      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -10), -0.1, 0.1));
+      break;
+    case (180):
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 20), -0.1, 0.1));
+      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -20), -0.1, 0.1));
+      break;
+    case (270):
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 30), -0.1, 0.1));
+      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -30), -0.1, 0.1));
+      break;
+    }
+    frc::SmartDashboard::PutNumber("elevatorPos1", elevatorEncoder1.GetPosition());
+    frc::SmartDashboard::PutNumber("elevatorPos2", elevatorEncoder2.GetPosition());
+  }*/
+
+   // Get joystick inputs
   float rawx = stick.GetRawAxis(0);
   float rawy = stick.GetRawAxis(1);
   float rawx2 = stick.GetRawAxis(4);
-  triggerL = -stick.GetRawAxis(2)*0.2;
-  triggerR = stick.GetRawAxis(3)*0.3;
-  //Intake/Outtake code
-  bool bumperR = stick.GetRawButton(6);
-  bool bumperL = stick.GetRawButton(5);
-  bool A = stick.GetRawButtonReleased(1);
-  int dpad = stick.GetPOV(0);
-  if (bumperL) {
-    intake.Set(-0.6);
-  } else {
-    intake.Set(0);
-  }
-  if (bumperR) {
-    outtake.Set(-0.85);
-    indexer.Set(0.60);
-  } else {
-    outtake.Set(0);
-    indexer.Set(0);
-  }
-  if (dpad == 0 && outtakeEnc.GetPosition()<=0) {
-    outtakeTilt.Set(0.15);
-  } else if (dpad == 180 && outtakeEnc.GetPosition()>=-38) {
-    outtakeTilt.Set(-0.1);
-  } else {
-    outtakeTilt.Set(0);
-  }
-  if (A) {
-    intakeSol.Toggle();
-  }
 
+  // Joystick Deadzones
   if ((rawx >= 0.1)||(rawx <= -0.1)){x = (rawx);} 
   else {x=0;}
   if ((rawy >= 0.1)||(rawy <= -0.1)){y = -(rawy);}
@@ -116,20 +120,19 @@ void Robot::TeleopPeriodic() {
     FieldCentric = false;
   }
 
-  //m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
-
+  m_swerve.Update(x, y, x2, 0, triggerL, triggerR,FieldCentric);
 }
 
 void Robot::DisabledInit() {}
 
 void Robot::DisabledPeriodic() {
-
-//m_swerve.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
-
 }
-void Robot::TestInit() {}
 
-void Robot::TestPeriodic() {}
+void Robot::TestInit() {
+}
+
+void Robot::TestPeriodic() {
+}
 
 void Robot::SimulationInit() {}
 

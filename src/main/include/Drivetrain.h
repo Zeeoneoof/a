@@ -16,9 +16,9 @@
 #include <frc2/command/SubsystemBase.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/Compressor.h>
+#include <frc/geometry/Pose2d.h>
+#include <frc/DriverStation.h>
 #include "math.h"
-
-#include "Odometry.h"
 
 static const int numEncoders = 4;
 
@@ -27,48 +27,54 @@ static const int numEncoders = 4;
 
 class Drivetrain : public frc2::SubsystemBase {
     public:
-        static Drivetrain& getInstance() {
-            static Drivetrain instance;
-            return instance;
-        }
-        bool initialize();
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
-    private:
+
+        void odometryUpdate(
+        double angleFL, 
+        double angleFR, 
+        double angleBL, 
+        double angleBR, 
+        double wheelSpeedFL,
+        double wheelSpeedFR,
+        double wheelSpeedBL,
+        double wheelSpeedBR,
+        double GyroValue);
+
         Drivetrain();
 
+        units::length::meter_t positionFWDField = units::length::meter_t(0);
+        units::length::meter_t positionSTRField = units::length::meter_t(0);
+        frc::Rotation2d ROTField = frc::Rotation2d(units::radian_t(0));
+    private:
+        
         //Talon FX
         //ctre::phoenix6::hardware::TalonFX m_FL_Drive2{11/*CAN ID*/};
         //ctre::phoenix6::hardware::CANcoder CANcoderFL{9/*CAN ID*/}
         //Drive motors
 
-        rev::spark::SparkMax m_FL_Drive{11, rev::spark::SparkMax::MotorType::kBrushless};
-        rev::spark::SparkMax m_FR_Drive{6, rev::spark::SparkMax::MotorType::kBrushless};
-        rev::spark::SparkMax m_BL_Drive{13, rev::spark::SparkMax::MotorType::kBrushless};
-        rev::spark::SparkMax m_BR_Drive{8, rev::spark::SparkMax::MotorType::kBrushless};
+        ctre::phoenix6::hardware::TalonFX m_FL_Drive{4/*CAN ID*/};//1
+        ctre::phoenix6::hardware::TalonFX m_FR_Drive{8};//2
+        ctre::phoenix6::hardware::TalonFX m_BL_Drive{7};//3
+        ctre::phoenix6::hardware::TalonFX m_BR_Drive{1};//4
 
-        rev::spark::SparkRelativeEncoder FL_Dr_Encoder = m_FL_Drive.GetEncoder();
-        rev::spark::SparkRelativeEncoder FR_Dr_Encoder = m_FR_Drive.GetEncoder();
-        rev::spark::SparkRelativeEncoder BL_Dr_Encoder = m_BL_Drive.GetEncoder();
-        rev::spark::SparkRelativeEncoder BR_Dr_Encoder = m_BR_Drive.GetEncoder();
         //Steering motors
-        rev::spark::SparkMax m_FL_Steer{12, rev::spark::SparkMax::MotorType::kBrushless};
-        rev::spark::SparkMax m_FR_Steer{5, rev::spark::SparkMax::MotorType::kBrushless};
-        rev::spark::SparkMax m_BL_Steer{10, rev::spark::SparkMax::MotorType::kBrushless};
-        rev::spark::SparkMax m_BR_Steer{7, rev::spark::SparkMax::MotorType::kBrushless};
-        rev::spark::SparkMaxConfig config{};
-        rev::spark::SparkMaxConfig config2{};
+        ctre::phoenix6::hardware::TalonFX m_FL_Steer{6};//1
+        ctre::phoenix6::hardware::TalonFX m_FR_Steer{5};//2
+        ctre::phoenix6::hardware::TalonFX m_BL_Steer{3};//3
+        ctre::phoenix6::hardware::TalonFX m_BR_Steer{2};//4
+        
+        ctre::phoenix6::configs::TalonFXConfiguration config{};
+        ctre::phoenix6::configs::TalonFXConfiguration config2{};
 
-        float ModuleP = 0.200000;
-        float ModuleI = 0.010083;
-        float ModuleD = 0.000221;
+          //P gain = 0.200000
+        //I gain = 0.010083
+        //D gain = 0.000221
+        float ModuleP = 0.1;
+        float ModuleI = 0.0;
+        float ModuleD = 0.0;
         float straightP = 0;
         float straightI = 0;
         float straightD = 0;
-
-        frc::AnalogInput LampFL{0};
-        frc::AnalogInput LampFR{3};
-        frc::AnalogInput LampBL{2};
-        frc::AnalogInput LampBR{1};
 
         // Constants for the robot dimensions and encoder configuration
         const float L = 0.5461;
@@ -81,6 +87,7 @@ class Drivetrain : public frc2::SubsystemBase {
         double oldspeedFL, oldspeedFR, oldspeedBL, oldspeedBR = 0;
 
         units::time::second_t lastTime = units::time::second_t(0);
+        units::time::second_t odoLastTime = units::time::second_t(0);
         double lasterrorFL, lasterrorFR, lasterrorBL, lasterrorBR = 0;
 
         double targetAngle = 0;
@@ -89,5 +96,23 @@ class Drivetrain : public frc2::SubsystemBase {
 
         double wheelSpeedFL, wheelSpeedFR, wheelSpeedBL, wheelSpeedBR = 0;
 
+        double odoROT = 0;
+        double odoFWD = 0;
+        double odoSTR = 0;
+
+        double previousDegreesFL;
+        double previousDegreesFR;
+        double previousDegreesBL;
+        double previousDegreesBR;
+
+        double previousAngleFL;
+        double previousAngleFR;
+        double previousAngleBL;
+        double previousAngleBR;
+
+        double MaxFLV = 0;
+        double MaxFRV = 0;
+        double MaxBLV = 0;
+        double MaxBRV = 0;
 };
 #endif
