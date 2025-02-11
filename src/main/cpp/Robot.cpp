@@ -22,9 +22,12 @@ void Robot::AutonomousInit() {
 }
 
 void Robot::AutonomousPeriodic() {
-  // Code executed periodically during autonomous mode
+
+  if (m_autoSelected == kAutoNameCustom) {
  
-  //drivetrain2.Update(x, y, x2, GyroValue, triggerL, triggerR,FieldCentric);
+  } else if (m_autoSelected == kAutoNameDefault) {
+
+  }
 }
 
 void Robot::TeleopInit() {

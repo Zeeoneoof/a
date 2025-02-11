@@ -18,6 +18,8 @@
 #include <frc/Compressor.h>
 #include <frc/geometry/Pose2d.h>
 #include <frc/DriverStation.h>
+#include <frc/geometry/Pose2d.h>
+#include <frc/DriverStation.h>
 #include "math.h"
 
 static const int numEncoders = 4;
@@ -28,6 +30,18 @@ static const int numEncoders = 4;
 class Drivetrain : public frc2::SubsystemBase {
     public:
         void Update(double x, double y, double x2, double GyroValue, double triggerL, double triggerR,bool FieldCentric);
+
+        void odometryUpdate(
+        double angleFL, 
+        double angleFR, 
+        double angleBL, 
+        double angleBR, 
+        double wheelSpeedFL,
+        double wheelSpeedFR,
+        double wheelSpeedBL,
+        double wheelSpeedBR,
+        double GyroValue);
+
 
         void odometryUpdate(
         double angleFL, 

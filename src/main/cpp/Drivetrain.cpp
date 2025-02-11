@@ -2,6 +2,36 @@
 
 #include "Drivetrain.h"
 
+double ROT = 0;
+double FWD = 0;
+double STR = 0;
+units::length::meter_t positionFWDField = units::length::meter_t(0);
+units::length::meter_t positionSTRField = units::length::meter_t(0);
+frc::Rotation2d ROTField = frc::Rotation2d(units::radian_t(0));
+
+double currentDegrees[4];
+double previousDegreesFL;
+double previousDegreesFR;
+double previousDegreesBL;
+double previousDegreesBR;
+
+double previousAngleFL;
+double previousAngleFR;
+double previousAngleBL;
+double previousAngleBR;
+
+double MaxFLV = 0;
+double MaxFRV = 0;
+double MaxBLV = 0;
+double MaxBRV = 0;
+
+double calculateAngle(double currentVoltage,int i,double MaxV){
+  if (i < numEncoders){
+    return currentDegrees[i] = ((currentVoltage/MaxV)*(2*M_PI));
+  }
+  return currentDegrees[i] = 0;
+}
+
 Drivetrain::Drivetrain () {
 
     config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);

@@ -12,6 +12,7 @@
 #include <frc/DoubleSolenoid.h>
 #include <frc/smartdashboard/SendableChooser.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/XboxController.h>
 
 #include "Drivetrain.h"
