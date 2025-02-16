@@ -8,7 +8,7 @@ Drivetrain m_swerve;
 
 void Robot::RobotInit() {
   //intakeEncoder.SetPosition(0);
-  //elevatorEncoder1.SetPosition(0);
+  elevatorEncoder1.SetPosition(0);
   //elevatorEncoder2.SetPosition(0);
 }
 
@@ -74,35 +74,37 @@ void Robot::TeleopPeriodic() {
   intakeWheels.Set(0);*/
 
   //Elevator
-  /*int dpad = stick.GetPOV(0);
+  int dpad = stick.GetPOV(0);
   frc::SmartDashboard::PutNumber("dpad", dpad);
   if (dpad != -1) {
     dpad = stick.GetPOV(0);
     frc::SmartDashboard::PutNumber("dpad", dpad);
     switch (dpad) {
     case (0):
-      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 0), -0.1, 0.1));
-      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), 0), -0.1, 0.1));
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 0), -0.2, 0.3));
+      //elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), 0), -0.1, 0.1));
       frc::SmartDashboard::PutNumber("elevatorPos1", elevatorEncoder1.GetPosition());
-      frc::SmartDashboard::PutNumber("elevatorPos2", elevatorEncoder2.GetPosition());
+      //frc::SmartDashboard::PutNumber("elevatorPos2", elevatorEncoder2.GetPosition());
       frc::SmartDashboard::PutString("elevator", "working");
       break;
     case (90):
-      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 10), -0.1, 0.1));
-      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -10), -0.1, 0.1));
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 40), -0.2, 0.3));
+      //elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -10), -0.1, 0.1));
       break;
     case (180):
-      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 20), -0.1, 0.1));
-      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -20), -0.1, 0.1));
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 80), -0.2, 0.3));
+      //elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -20), -0.1, 0.1));
       break;
     case (270):
-      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 30), -0.1, 0.1));
-      elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -30), -0.1, 0.1));
+      elevatorMotor1.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder1.GetPosition(), 160), -0.2, 0.3));
+      //elevatorMotor2.Set(std::clamp(elevatorPID.Calculate(elevatorEncoder2.GetPosition(), -30), -0.1, 0.1));
       break;
     }
     frc::SmartDashboard::PutNumber("elevatorPos1", elevatorEncoder1.GetPosition());
-    frc::SmartDashboard::PutNumber("elevatorPos2", elevatorEncoder2.GetPosition());
-  }*/
+    //frc::SmartDashboard::PutNumber("elevatorPos2", elevatorEncoder2.GetPosition());
+  } else {
+    elevatorMotor1.Set(0);
+  }
 
    // Get joystick inputs
   float rawx = stick.GetRawAxis(0);

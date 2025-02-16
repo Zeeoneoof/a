@@ -2,62 +2,75 @@
 
 #include "Drivetrain.h"
 
-double ROT = 0;
-double FWD = 0;
-double STR = 0;
-units::length::meter_t positionFWDField = units::length::meter_t(0);
-units::length::meter_t positionSTRField = units::length::meter_t(0);
-frc::Rotation2d ROTField = frc::Rotation2d(units::radian_t(0));
-
-double currentDegrees[4];
-double previousDegreesFL;
-double previousDegreesFR;
-double previousDegreesBL;
-double previousDegreesBR;
-
-double previousAngleFL;
-double previousAngleFR;
-double previousAngleBL;
-double previousAngleBR;
-
-double MaxFLV = 0;
-double MaxFRV = 0;
-double MaxBLV = 0;
-double MaxBRV = 0;
-
-double calculateAngle(double currentVoltage,int i,double MaxV){
-  if (i < numEncoders){
-    return currentDegrees[i] = ((currentVoltage/MaxV)*(2*M_PI));
-  }
-  return currentDegrees[i] = 0;
-}
-
 Drivetrain::Drivetrain () {
 
-    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);
-    config.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
+    //Drive Krakens configurations
+    driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);
+    driveConfig.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Brake;
 
-    m_FL_Drive.GetConfigurator().Apply(config);
-    m_FR_Drive.GetConfigurator().Apply(config);
-    m_BL_Drive.GetConfigurator().Apply(config);
-    m_BR_Drive.GetConfigurator().Apply(config);
+    m_FL_Drive.GetConfigurator().Apply(driveConfig);
+    m_FR_Drive.GetConfigurator().Apply(driveConfig);
+    m_BL_Drive.GetConfigurator().Apply(driveConfig);
+    m_BR_Drive.GetConfigurator().Apply(driveConfig);
 
-    //Talon FX
-    //m_FL_Drive2.ClearStickyFaults();
-    //m_FL_Drive2.SetNeutralMode(ctre::phoenix6::signals::NeutralModeValue::Brake);
+    //Steer Krakens configurations // also fusing CANcoder to Krakens encoder for higher accuracy
+    //configFL.Feedback.FeedbackRemoteSensorID = CANcoderFL.GetDeviceID();
+    //configFL.Feedback.FeedbackSensorSource = ctre::phoenix6::signals::FeedbackSensorSourceValue::FusedCANcoder;
+    //configFL.Feedback.SensorToMechanismRatio = 1.0;
+    //configFL.Feedback.RotorToSensorRatio = 18;
+    configFL.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);
+    configFL.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
 
-    config2.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);
-    config2.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
+    //configFR.Feedback.FeedbackRemoteSensorID = CANcoderFR.GetDeviceID();
+    //configFR.Feedback.FeedbackSensorSource = ctre::phoenix6::signals::FeedbackSensorSourceValue::FusedCANcoder;
+    //configFR.Feedback.SensorToMechanismRatio = 1.0;
+    //configFR.Feedback.RotorToSensorRatio = 18;
+    configFR.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);
+    configFR.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
 
-    m_FL_Steer.GetConfigurator().Apply(config2);
-    m_FR_Steer.GetConfigurator().Apply(config2);
-    m_BL_Steer.GetConfigurator().Apply(config2);
-    m_BR_Steer.GetConfigurator().Apply(config2);
+    //configBL.Feedback.FeedbackRemoteSensorID = CANcoderBL.GetDeviceID();
+    //configBL.Feedback.FeedbackSensorSource = ctre::phoenix6::signals::FeedbackSensorSourceValue::FusedCANcoder;
+    //configBL.Feedback.SensorToMechanismRatio = 1.0;
+    //configBL.Feedback.RotorToSensorRatio = 18;
+    configBL.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);
+    configBL.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
 
-    m_FL_Steer.SetPosition(units::angle::turn_t(0));
-    m_FR_Steer.SetPosition(units::angle::turn_t(0));
-    m_BL_Steer.SetPosition(units::angle::turn_t(0));
-    m_BR_Steer.SetPosition(units::angle::turn_t(0));
+    //configBR.Feedback.FeedbackRemoteSensorID = CANcoderBR.GetDeviceID();
+    //configBR.Feedback.FeedbackSensorSource = ctre::phoenix6::signals::FeedbackSensorSourceValue::FusedCANcoder;
+    //configBR.Feedback.SensorToMechanismRatio = 1.0;
+    //configBR.Feedback.RotorToSensorRatio = 18;
+    configBR.ClosedLoopRamps.VoltageClosedLoopRampPeriod = units::time::second_t(1);
+    configBR.MotorOutput.NeutralMode = ctre::phoenix6::signals::NeutralModeValue::Coast;
+
+    m_FL_Steer.GetConfigurator().Apply(configFL);
+    m_FR_Steer.GetConfigurator().Apply(configFR);
+    m_BL_Steer.GetConfigurator().Apply(configBL);
+    m_BR_Steer.GetConfigurator().Apply(configBR);
+
+    //Configure CANcoder to zero the magnet appropriately
+    /*cc_cfg.MagnetSensor.SensorDirection = ctre::phoenix6::signals::SensorDirectionValue::CounterClockwise_Positive;
+    cc_cfg.MagnetSensor.MagnetOffset = 0.4_tr;
+
+    CANcoderFL.GetConfigurator().Apply(cc_cfg);
+    CANcoderFR.GetConfigurator().Apply(cc_cfg);
+    CANcoderBL.GetConfigurator().Apply(cc_cfg);
+    CANcoderBR.GetConfigurator().Apply(cc_cfg);*/
+
+    /*
+    music.Restart
+    music.AddInstrument(m_FL_Drive);
+    music.AddInstrument(m_FL_Steer);
+    music.AddInstrument(m_BL_Drive);
+    music.AddInstrument(m_BL_Steer);
+    music.AddInstrument(m_FR_Drive);
+    music.AddInstrument(m_FR_Steer);
+    music.AddInstrument(m_BR_Drive);
+    music.AddInstrument(m_BR_Steer);
+    music.LoadMusic("imperial.chrp");
+    music.Play();
+    music.LoadMusic("output.chrp");
+    music.Play();
+    */
 }
 
 void Drivetrain::Update (double x, double y, double x2, double GyroValue, double triggerL, double triggerR, bool FieldCentric)  {
@@ -66,19 +79,28 @@ void Drivetrain::Update (double x, double y, double x2, double GyroValue, double
   straightI = frc::SmartDashboard::GetNumber("Straight I", 0);
   straightD = frc::SmartDashboard::GetNumber("Not Straight D", 0);
 
-  //ctre::phoenix6::StatusSignal<units::angle::turn_t> CANcoderFLAngle = CANcoderFL.GetPosition();
-  //double CANcoderFLpos = double(CANcoderFLpos)
-
-  double FL_pos = std::fmod(M_PI/180*(16.36363636*double(m_FL_Steer.GetPosition().GetValue())), 2*M_PI);
+  //get wheel angle with motor encoder
+  /*double FL_pos = std::fmod(M_PI/180*(18*double(m_FL_Steer.GetPosition().GetValue())), 2*M_PI);
   if (FL_pos < 0) FL_pos += 2*M_PI;
-  double FR_pos = std::fmod(M_PI/180*(16.36363636*double(m_FR_Steer.GetPosition().GetValue())), 2*M_PI);
+  double FR_pos = std::fmod(M_PI/180*(18*double(m_FR_Steer.GetPosition().GetValue())), 2*M_PI);
   if (FR_pos < 0) FR_pos += 2*M_PI;
-  double BL_pos = std::fmod(M_PI/180*(16.36363636*double(m_BL_Steer.GetPosition().GetValue())), 2*M_PI);
+  double BL_pos = std::fmod(M_PI/180*(18*double(m_BL_Steer.GetPosition().GetValue())), 2*M_PI);
   if (BL_pos < 0) BL_pos += 2*M_PI;
-  double BR_pos = std::fmod(M_PI/180*(16.36363636*double(m_BR_Steer.GetPosition().GetValue())), 2*M_PI);
-  if (BR_pos < 0) BR_pos += 2*M_PI;
+  double BR_pos = std::fmod(M_PI/180*(18*double(m_BR_Steer.GetPosition().GetValue())), 2*M_PI);
+  if (BR_pos < 0) BR_pos += 2*M_PI;*/
+
+  //get wheel angle with CANcoder
+  /*double FL_pos = (m_FL_Steer.GetPosition().GetValueAsDouble());
+  double FR_pos = (m_FR_Steer.GetPosition().GetValueAsDouble());
+  double BL_pos = (m_BL_Steer.GetPosition().GetValueAsDouble());
+  double BR_pos = (m_BR_Steer.GetPosition().GetValueAsDouble());*/
+
+  double FL_pos = CANcoderFL.GetAbsolutePosition().GetValueAsDouble()*(2*M_PI);
+  double FR_pos = CANcoderFR.GetAbsolutePosition().GetValueAsDouble()*(2*M_PI);
+  double BL_pos = CANcoderBL.GetAbsolutePosition().GetValueAsDouble()*(2*M_PI);
+  double BR_pos = CANcoderBR.GetAbsolutePosition().GetValueAsDouble()*(2*M_PI);
   
-  frc::SmartDashboard::PutNumber("FR_Angle",FR_pos);
+  frc::SmartDashboard::PutNumber("BL_Angle",BL_pos);
 
 
   //Calculate time difference since last loop
@@ -236,7 +258,7 @@ if (abs(errorBR) > M_PI / 2) {
   double dErrorFR = (errorFR - lasterrorFR) / doubleDeltaTime;
   double steerm_speedFR = ModuleP * errorFR + ModuleI * iErrorFR + ModuleD * dErrorFR;
   lasterrorFR = errorFR;
-  frc::SmartDashboard::PutNumber("errorFR",errorFR);
+  frc::SmartDashboard::PutNumber("errorBL",errorBL);
 
   //Back Left PID calculations
   double iErrorBL;
@@ -252,11 +274,11 @@ if (abs(errorBR) > M_PI / 2) {
   double steerm_speedBR = ModuleP * errorBR + ModuleI * iErrorBR + ModuleD * dErrorBR;
   lasterrorBR = errorBR;
 
-  if (steerm_speedBR > 0.01||steerm_speedBR < -0.01) {
-    //m_FL_Steer.Set(std::clamp(steerm_speedFL, -0.25, 0.25));
+  if (steerm_speedBR > 0.03||steerm_speedBR < -0.03) {
+    m_FL_Steer.Set(std::clamp(steerm_speedFL, -0.25, 0.25));
     m_FR_Steer.Set(std::clamp(steerm_speedFR, -0.25, 0.25));
-    //m_BL_Steer.Set(std::clamp(steerm_speedBL, -0.25, 0.25));
-    //m_BR_Steer.Set(std::clamp(steerm_speedBR, -0.25, 0.25));
+    m_BL_Steer.Set(std::clamp(steerm_speedBL, -0.25, 0.25));
+    m_BR_Steer.Set(std::clamp(steerm_speedBR, -0.25, 0.25));
   } else {
     m_FL_Steer.Set(0);
     m_FR_Steer.Set(0);
@@ -283,13 +305,13 @@ if (speedFL != speedFL){
   speedBL = 0;
   speedBR = 0;
 } else {
-  //m_FL_Drive.Set(std::clamp(oldspeedFL/1.25,-0.1,0.1)); 
+  m_FL_Drive.Set(std::clamp(-oldspeedFL/1.25,-0.2,0.2)); 
 
-  m_FR_Drive.Set(std::clamp(oldspeedFR/1.25,-0.2,0.2));
+  m_FR_Drive.Set(std::clamp(-oldspeedFR/1.25,-0.2,0.2));
 
-  //m_BL_Drive.Set(std::clamp(oldspeedBL/1.25,-0.1,0.1)); 
+  m_BL_Drive.Set(std::clamp(-oldspeedBL/1.25,-0.2,0.2)); 
 
-  //m_BR_Drive.Set(std::clamp(oldspeedBR/1.25,-0.1,0.1));
+  m_BR_Drive.Set(std::clamp(-oldspeedBR/1.25,-0.2,0.2));
 }
 
 /*

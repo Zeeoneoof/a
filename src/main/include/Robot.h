@@ -54,10 +54,10 @@ class Robot : public frc::TimedRobot {
   /*rev::spark::SparkMax coralMotorHorizontal{14, rev::spark::SparkMax::MotorType::kBrushless};
   rev::spark::SparkMax coralMotorVertical{14, rev::spark::SparkMax::MotorType::kBrushless};
 */
-  //rev::spark::SparkMax elevatorMotor1{8, rev::spark::SparkMax::MotorType::kBrushless};
+  rev::spark::SparkMax elevatorMotor1{10, rev::spark::SparkMax::MotorType::kBrushless};
   //rev::spark::SparkMax elevatorMotor2{29, rev::spark::SparkMax::MotorType::kBrushless};
 
-  //rev::spark::SparkRelativeEncoder elevatorEncoder1 = elevatorMotor1.GetEncoder();
+  rev::spark::SparkRelativeEncoder elevatorEncoder1 = elevatorMotor1.GetEncoder();
   //rev::spark::SparkRelativeEncoder elevatorEncoder2 = elevatorMotor2.GetEncoder();
 
   double x = 0;// left joystick x-axis
